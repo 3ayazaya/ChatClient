@@ -15,13 +15,18 @@ Config.set('graphics', 'width', '500')
 Config.set('graphics', 'height', '650')
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-host = "192.168.1.65"
+ip = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+# get ip address
+host=ip.getsockname()[0]
+ip.close()
+
 port = 0
 s.bind((host, port))
 s.setblocking(0)
 name = socket.gethostname()
 server = ("94.250.254.43", 9090)
-
+shutdown = False
 
 
 class ClientApp(App):
@@ -36,7 +41,7 @@ class ClientApp(App):
             self.writeTextInput.text = ''
 
     def reciveMsg(self, sock):
-        while (ClientApp == True):
+        while (shutdown!=True):
             try:
                 message, addr = sock.recvfrom(1024)
                 self.readText.text += message.decode("utf-8") + "\n"
@@ -74,3 +79,4 @@ if __name__=='__main__':
     ClientApp().run()
     s.sendto(("[" + name + "] <= left chat ").encode("utf-8"), server)
     s.close()
+    shutdown = True
