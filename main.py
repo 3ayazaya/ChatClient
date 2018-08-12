@@ -1,6 +1,7 @@
 import socket
 from threading import Thread
 from time import sleep
+import os
 
 
 from kivy.app import App
@@ -15,12 +16,13 @@ Config.set('graphics', 'width', '500')
 Config.set('graphics', 'height', '650')
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-ip = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-# get ip address
-host=ip.getsockname()[0]
-ip.close()
-
+if (os.name!='nt'):
+    ip = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # get ip address
+    host=ip.getsockname()[0]
+    ip.close()
+else:
+    host = socket.gethostbyname(socket.gethostname())
 port = 0
 s.bind((host, port))
 s.setblocking(0)
@@ -51,8 +53,12 @@ class ClientApp(App):
 
     def build(self):
         writeSendLayout=BoxLayout(spacing=20)
-        verticalLayout=BoxLayout(orientation='vertical', padding=[20, 20, 20, 20], spacing=20)
-
+        
+        if (os.name=="nt"):
+            verticalLayout=BoxLayout(orientation='vertical', padding=[20, 40, 20, 20], spacing=20)
+        else:
+            verticalLayout=BoxLayout(orientation='vertical', padding=[20, 20, 20, 20], spacing=20)
+        
         sendButton=Button(text="Send", on_press=self.sendMsg)
         self.writeTextInput=TextInput(size_hint_x=5)
         self.readText=TextInput(size_hint_y=12)
@@ -69,6 +75,7 @@ class ClientApp(App):
         try:
             th = Thread(target=self.reciveMsg, name="Recive", args=(s,))
             th.start()
+            self.readText.text += name + " [" + host + "] has been connected to server!\n"
         except:
             pass
 
